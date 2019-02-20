@@ -1,0 +1,42 @@
+Install python3, darkflow and other dependencies such as cython, etc
+Create virtual environment "darkflow"
+LABELING and creating our own DATASET:
+LabelImg is a graphical image annotation tool. It is written in Python and uses Qt for its graphical interface.
+Annotations are saved as XML files in PASCAL VOC format, the format used by ImageNet. Besdies, it also supports YOLO format.
+Link: https://github.com/tzutalin/labelImg
+We used PASCAL VOC dataset as darkflow version is already trained on it. 
+We took our own pictures in various banking centers - augmented them to create a good set of 500 pictures in PNG.
+Used the labelIMG tool to annotate the pictures with 2 classes - person and pets. 
+
+FLOW:
+Edit labels.txt with 2 classes - person, pets
+Save pictures in Images folder and annotated files in Annotations folder.
+Download weights and files from thtrieu/darkflow trained in PASCAL VOC format
+Make sure you have bin and cfg subfolders under Darkflow folder
+See link:https://github.com/thtrieu/darkflow
+Download tiny-yolo-voc.weights (63.5 MB) in darkflow/bin folder
+Make sure you have tiny-yolo-voc-cfg under darkflow/cfg folder
+Copy the above file and save as myconf-yolo.cfg un the same folder
+Open above file & edit only the last 2 layers: Change only classes as 2 and filters as 35 (as 2 + 5 = 7 times 5)
+  [convolutional]
+  size=1
+  stride=1
+  pad=1
+  filters=35
+  activation=linear
+
+  [region]
+  anchors =  0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828
+  bias_match=1
+  classes=2
+  coords=4
+  num=5
+  softmax=1
+  jitter=.3
+  rescore=1
+
+flow --model cfg/myconf-yolo.cfg --load bin/tiny-yolo-voc.weights --train --annotation data/annotations --dataset data/images
+
+This program ran for 1000 epochs (took 3-4 hours in MAC). Still reviewing the output - cost and accuracy. 
+
+
