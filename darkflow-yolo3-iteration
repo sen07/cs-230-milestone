@@ -39,4 +39,22 @@ flow --model cfg/myconf-yolo.cfg --load bin/tiny-yolo-voc.weights --train --anno
 
 This program ran for 1000 epochs (took 3-4 hours in MAC). Still reviewing the output - cost and accuracy. 
 
+Check darkflow/ckpt folder and it has a checkpoint file with requirements to save weights every 250 epochs
+It has created myconfig-yolo-250.data, xxx.meta, xxx.index, xxx.profile files for 250, 500, 750, 1000 epochs
+Create build_graph files from the model:
+
+flow --model cfg/myconf-yolo.cfg --load -1 --savepb
+
+This creates darakflow/built_graph subfolder with 2 files: myconf-yolo.pb and myconf-yolo.meta
+Now, test few pictures with above trained model. Copy few bank pictures we have and load them in darkflow/testrun folder
+Now run this command to see if our trained model is able to review the new images and create bounding box on classes. 
+
+flow --pbLoad built_graph/myconf-yolo.pb --metaLoad built_graph/myconf-yolo.meta --imgdir testrun/
+
+Reviewing the results.
+
+
+
+
+
 
