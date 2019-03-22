@@ -1,23 +1,27 @@
-Install python3, darkflow and other dependencies such as cython, etc
-Create virtual environment "darkflow"
-LABELING and creating our own DATASET:
-LabelImg is a graphical image annotation tool. It is written in Python and uses Qt for its graphical interface.
-Annotations are saved as XML files in PASCAL VOC format, the format used by ImageNet. Besdies, it also supports YOLO format.
-Link: https://github.com/tzutalin/labelImg
-We used PASCAL VOC dataset as darkflow version is already trained on it. 
-We took our own pictures in various banking centers - augmented them to create a good set of 500 pictures in PNG.
-Used the labelIMG tool to annotate the pictures with 2 classes - person and pets. 
+## Install python3, darkflow and other dependencies such as cython, etc
+## Create virtual environment "darkflow"
+## LABELING and creating our own DATASET:
+## LabelImg is a graphical image annotation tool. It is written in Python and uses Qt for its graphical interface.
+## Annotations are saved as XML files in PASCAL VOC format, the format used by ImageNet. Besdies, it also supports YOLO format.
+## Link: https://github.com/tzutalin/labelImg
+## We used PASCAL VOC dataset as darkflow version is already trained on it. 
+## We took our own pictures in various banking centers - augmented them to create a good set of 500 pictures in PNG.
+## Used the labelIMG tool to annotate the pictures with 2 classes - person and pets. 
+## Launch tool:
+python labelimg.py /Pic-0223-png classes.txt
 
 FLOW:
-Edit labels.txt with 2 classes - person, pets
-Save pictures in Images folder and annotated files in Annotations folder.
-Download weights and files from thtrieu/darkflow trained in PASCAL VOC format
-Make sure you have bin and cfg subfolders under Darkflow folder
-See link:https://github.com/thtrieu/darkflow
-Download tiny-yolo-voc.weights (63.5 MB) in darkflow/bin folder
-Make sure you have tiny-yolo-voc-cfg under darkflow/cfg folder
-Copy the above file and save as myconf-yolo.cfg un the same folder
-Open above file & edit only the last 2 layers: Change only classes as 2 and filters as 35 (as 2 + 5 = 7 times 5)
+## Edit labels.txt with 2 classes - person, pets
+## Save pictures in Images folder and annotated files in Annotations folder.
+## Download weights and files from thtrieu/darkflow trained in PASCAL VOC format
+## Make sure you have bin and cfg subfolders under Darkflow folder
+## See link:https://github.com/thtrieu/darkflow
+## Download tiny-yolo-voc.weights (63.5 MB) in darkflow/bin folder
+## Make sure you have tiny-yolo-voc-cfg under darkflow/cfg folder
+## Copy the above file and save as myconf-yolo.cfg un the same folder
+## Open above file & edit only the last 2 layers: Change only classes as 2 and filters as 35 (as 2 + 5 = 7 times 5)
+
+nano labels.txt
   [convolutional]
   size=1
   stride=1
@@ -37,24 +41,37 @@ Open above file & edit only the last 2 layers: Change only classes as 2 and filt
 
 flow --model cfg/myconf-yolo.cfg --load bin/tiny-yolo-voc.weights --train --annotation data/annotations --dataset data/images
 
-This program ran for 1000 epochs (took 3-4 hours in MAC). Still reviewing the output - cost and accuracy. 
+## This program ran for 1000 iterations (took 3-4 hours in MAC and 10,000 iterations take 24 hours or so) 
 
-Check darkflow/ckpt folder and it has a checkpoint file with requirements to save weights every 250 epochs
-It has created myconfig-yolo-250.data, xxx.meta, xxx.index, xxx.profile files for 250, 500, 750, 1000 epochs
-Create build_graph files from the model:
+## Check darkflow/ckpt folder and it has a checkpoint file with requirements to save weights every 250 epochs
+## It has created myconfig-yolo-250.data, xxx.meta, xxx.index, xxx.profile files for 250, 500, 750, 1000 epochs
+## Create build_graph files from the model:
 
 flow --model cfg/myconf-yolo.cfg --load -1 --savepb
 
-This creates darakflow/built_graph subfolder with 2 files: myconf-yolo.pb and myconf-yolo.meta
-Now, test few pictures with above trained model. Copy few bank pictures we have and load them in darkflow/testrun folder
-Now run this command to see if our trained model is able to review the new images and create bounding box on classes. 
+## This creates darakflow/built_graph subfolder with 2 files: myconf-yolo.pb and myconf-yolo.meta
+## Now, test few pictures with above trained model. Copy few bank pictures we have and load them in darkflow/testrun folder
+## Now run this command to see if our trained model is able to review the new images and create bounding box on classes. 
 
 flow --pbLoad built_graph/myconf-yolo.pb --metaLoad built_graph/myconf-yolo.meta --imgdir testrun/
 
-Reviewing the results.
+## Reviewing the results. YOLOv2 needs additional tools to compute results such as accuracy, so we installed pyyolo
+git clone https://github.com/digitalbrain79/pyyolo
+git clone --recursive https://github.com/digitalbrain79/pyyolo 
+# write a short program to calculate accuracy
+nano test.py
+from darkflow.net.build import TFNet
+import cv2
 
+options = {"model": "cfg/myconf-yolo.cfg", "threshold": 0.1}
 
+tfnet = TFNet(options)
 
+imgcv = cv2.imread("data/images/image5.jpg")
+result = tfnet.return_predict(imgcv)
+print(result)
 
+## command to calcuate accurarcy from our last model with saved files in darkflow dir is this:
+python test.py
 
-
+## make sure all models run in darkflow virtual env.
